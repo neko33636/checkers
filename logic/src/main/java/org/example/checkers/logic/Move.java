@@ -1,5 +1,7 @@
 package org.example.checkers.logic;
 
+import java.util.Objects;
+
 public class Move {
     private final int fromR, fromC;
     private final int toR, toC;
@@ -36,4 +38,24 @@ public class Move {
             return String.format("(%d,%d)->(%d,%d)", fromR, fromC, toR, toC);
         }
     }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Move)) return false;
+        Move m = (Move) o;
+        return fromR == m.fromR && fromC == m.fromC &&
+                toR == m.toR && toC == m.toC &&
+                capture == m.capture &&
+                (!capture || (capturedR == m.capturedR && capturedC == m.capturedC));
+    }
+
+    @Override
+    public int hashCode() {
+        if (capture) {
+            return Objects.hash(fromR, fromC, toR, toC, capture, capturedR, capturedC);
+        } else {
+            return Objects.hash(fromR, fromC, toR, toC, capture);
+        }
+    }
+
 }
