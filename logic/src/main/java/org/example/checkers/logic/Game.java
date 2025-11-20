@@ -3,23 +3,51 @@ package org.example.checkers.logic;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Главный класс, управляющий логикой игры в шашки.
+ * Содержит текущее состояние доски, игрока, выполняет ходы,
+ * определяет допустимые ходы и проверяет конец игры.
+ */
 public class Game {
     private Board board;
     private Piece.Color currentPlayer;
     private boolean gameOver;
     private int continueR = -1, continueC = -1;
+    /**
+     * Создаёт новую игру, инициализируя стандартную доску
+     * и устанавливая текущего игрока — белые.
+     */
 
     public Game() {
         board = new Board();
         currentPlayer = Piece.Color.WHITE;
         gameOver = false;
     }
-
+    /**
+     * Возвращает текущую игровую доску.
+     *
+     * @return объект {@link Board}, представляющий расстановку шашек.
+     */
     public Board getBoard() { return board; }
+    /**
+     * Возвращает игрока, чей ход должен быть выполнен.
+     *
+     * @return цвет игрока, который должен ходить (WHITE или BLACK).
+     */
     public Piece.Color getCurrentPlayer() { return currentPlayer; }
+    /**
+     * Проверяет, завершена ли игра.
+     *
+     * @return true — если у текущего игрока нет ходов; false — иначе.
+     */
     public boolean isGameOver() { return gameOver; }
-
+    /**
+     * Получает список всех допустимых ходов для текущего игрока.
+     * Правило шашек: если есть хоть один ход с захватом —
+     * разрешены только захваты.
+     *
+     * @return список объектов {@link Move}, которые игрок может выполнить.
+     */
     public List<Move> getAllLegalMoves() {
         List<Move> captures = new ArrayList<>();
         List<Move> normal = new ArrayList<>();
@@ -39,6 +67,14 @@ public class Game {
         return captures.isEmpty() ? normal : captures;
     }
 
+    /**
+     * Возвращает допустимые ходы для одной конкретной шашки.
+     * Сначала ищутся захваты (если они есть — обычные ходы игнорируются).
+     *
+     * @param r строка шашки
+     * @param c столбец шашки
+     * @return список возможных ходов, включая захваты
+     */
 
     public List<Move> getLegalMovesForPiece(int r, int c) {
         List<Move> res = new ArrayList<>();
@@ -55,7 +91,6 @@ public class Game {
             dirs = new int[][]{{1,1},{1,-1}}; // чёрные идут вниз
         }
 
-        // сначала поиск захватов
         for (int[] d : dirs) {
             int midR = r + d[0];
             int midC = c + d[1];
@@ -81,7 +116,18 @@ public class Game {
         return res;
     }
 
-
+    /**
+     * Выполняет ход, если он допустим.
+     * Производит:
+     *  - перемещение шашки;
+     *  - удаление съеденной шашки;
+     *  - проверку на превращение в дамку;
+     *  - проверку на возможное продолжение серии захватов;
+     *  - смену игрока.
+     *
+     * @param m объект {@link Move}, описывающий ход
+     * @return true — если ход был выполнен; false — если ход недопустим
+     */
     public boolean makeMove(Move m) {
         if (gameOver) return false;
 
@@ -120,7 +166,14 @@ public class Game {
         checkGameOver();
         return true;
     }
-
+    /**
+     * Получает только захваты (если они есть) для выбранной шашки.
+     *
+     * @param r текущая строка шашки
+     * @param c текущий столбец шашки
+     * @param p объект {@link Piece}, представляющий шашку
+     * @return список возможных захватов
+     */
     private List<Move> getLegalCapturesForPiece(int r, int c, Piece p) {
         List<Move> res = new ArrayList<>();
         if (p == null) return res;
@@ -141,7 +194,14 @@ public class Game {
         }
         return res;
     }
-
+    /**
+     * Сравнивает два хода на совпадение всех параметров.
+     * Используется вместо equals(), которого нет в {@link Move}.
+     *
+     * @param a первый ход
+     * @param b второй ход
+     * @return true — если ходы идентичны; false иначе
+     */
     private boolean movesEqual(Move a, Move b) {
         if (a == null || b == null) return false;
         if (a.fromR() != b.fromR() || a.fromC() != b.fromC()) return false;
@@ -152,10 +212,17 @@ public class Game {
         }
         return true;
     }
+    /**
+     * Меняет текущего игрока (белые → чёрные или наоборот).
+     */
 
     private void switchPlayer() {
         currentPlayer = (currentPlayer == Piece.Color.WHITE) ? Piece.Color.BLACK : Piece.Color.WHITE;
     }
+    /**
+     * Проверяет, есть ли у текущего игрока доступные ходы.
+     * Если ходов нет — игра завершается.
+     */
 
     private void checkGameOver() {
         boolean any = false;
@@ -172,7 +239,12 @@ public class Game {
             gameOver = true;
         }
     }
-
+    /**
+     * Если игрок обязан продолжить серию захватов той же шашкой,
+     * метод возвращает её координаты.
+     *
+     * @return массив {row, col}; если нет продолжения — {-1, -1}
+     */
     public int[] getContinuePosition() {
         return new int[]{continueR, continueC};
     }
